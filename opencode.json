@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "https://mcp.figma.com/mcp": {
+      "type": "local",
+      "command": [
+        "https://mcp.figma.com/mcp"
+      ]
+    }
+  }
+}
