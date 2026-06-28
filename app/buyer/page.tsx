@@ -1,6 +1,28 @@
 "use client";
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/stores/authStore'
+
 export default function BuyerHomePage() {
+  const router = useRouter()
+  const { isAuthenticated, activeRole } = useAuthStore()
+
+  useEffect(() => {
+    // Redirect if not logged in as buyer
+    if (!isAuthenticated || activeRole !== 'buyer') {
+      router.push('/auth/login')
+    }
+  }, [isAuthenticated, activeRole, router])
+
+  if (!isAuthenticated || activeRole !== 'buyer') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-seapedia-bg">
+        <div className="animate-pulse">Memuat...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-seapedia-bg">
       {/* Header */}
@@ -8,17 +30,17 @@ export default function BuyerHomePage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-seapedia-navy">SEAPEDIA</h1>
           <nav className="flex items-center gap-6">
-            <a href="/products" className="text-gray-600 hover:text-seapedia-navy">
+            <a href="/buyer/products" className="text-gray-600 hover:text-seapedia-navy">
               Produk
             </a>
-            <a href="/stores" className="text-gray-600 hover:text-seapedia-navy">
-              Toko
+            <a href="/buyer/cart" className="text-gray-600 hover:text-seapedia-navy">
+              Keranjang
             </a>
-            <a href="/cart" className="text-gray-600 hover:text-seapedia-navy">
-              Cart
+            <a href="/buyer/orders" className="text-gray-600 hover:text-seapedia-navy">
+              Pesanan
             </a>
-            <a href="/login" className="px-4 py-2 text-seapedia-navy border border-seapedia-navy rounded-lg hover:bg-seapedia-navy hover:text-white transition">
-              Masuk
+            <a href="/buyer/wallet" className="text-gray-600 hover:text-seapedia-navy">
+              Wallet
             </a>
           </nav>
         </div>
@@ -28,23 +50,17 @@ export default function BuyerHomePage() {
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-seapedia-navy mb-6">
-            Belanja Mudah & Terpercaya
+            Selamat Datang di SEAPEDIA
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Temukan berbagai produk berkualitas dari toko-toko terpercaya di SEAPEDIA
+            Temukan berbagai produk seafood berkualitas dari toko-toko terpercaya
           </p>
           <div className="flex gap-4 justify-center">
-            <a 
-              href="/products" 
+            <a
+              href="/buyer/products"
               className="px-8 py-3 bg-seapedia-navy text-white rounded-lg hover:bg-seapedia-navy/90 transition font-semibold"
             >
               Jelajahi Produk
-            </a>
-            <a 
-              href="/register" 
-              className="px-8 py-3 bg-white text-seapedia-navy border border-seapedia-navy rounded-lg hover:bg-seapedia-bg transition font-semibold"
-            >
-              Daftar Sekarang
             </a>
           </div>
         </div>

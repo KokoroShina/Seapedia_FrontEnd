@@ -36,7 +36,7 @@ export default function LoginForm() {
       </h2>
       <p className="text-sm text-[#6B7280] mb-6">
         Belum punya akun?{' '}
-        <Link href="/register" className="text-[#1B8AC4] font-medium hover:underline">
+        <Link href="/auth/register" className="text-[#1B8AC4] font-medium hover:underline">
           Daftar di sini
         </Link>
       </p>
@@ -93,7 +93,7 @@ export default function LoginForm() {
         {/* Forgot Password Link */}
         <div className="flex justify-end">
           <Link
-            href="/forgot-password"
+            href="/auth/forgot-password"
             className="text-[13px] text-[#1B8AC4] hover:underline"
           >
             Lupa password?

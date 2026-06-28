@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const PUBLIC_PATHS = ['/', '/login', '/register', '/forgot-password', '/verify-otp', '/reset-password']
-
-// Halaman auth: redirect ke home kalau sudah login
-const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/verify-otp', '/reset-password']
+const PUBLIC_PATHS = [
+  '/',
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/verify-otp',
+  '/auth/reset-password'
+]
 
 const ROLE_PATHS: Record<string, string> = {
   '/seller': 'seller',
@@ -11,19 +15,22 @@ const ROLE_PATHS: Record<string, string> = {
   '/admin': 'admin',
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const token = req.cookies.get('seapedia_token')?.value
   const role = req.cookies.get('seapedia_role')?.value
   const { pathname } = req.nextUrl
 
-  // Kalau sudah login dan akses halaman auth, redirect ke home
-  if (token && AUTH_PATHS.some((p) => pathname.startsWith(p))) {
-    return NextResponse.redirect(new URL('/', req.url))
-  }
+  // Cek apakah path termasuk public path secara presisi
+  const isPublicPath = PUBLIC_PATHS.some((p) => {
+    if (p === '/') {
+      return pathname === '/'
+    }
+    return pathname.startsWith(p)
+  })
 
   // Kalau belum login dan akses halaman protected, redirect ke login
-  if (!token && !PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
-    return NextResponse.redirect(new URL('/login', req.url))
+  if (!token && !isPublicPath) {
+    return NextResponse.redirect(new URL('/auth/login', req.url))
   }
 
   // Cek role untuk halaman khusus role

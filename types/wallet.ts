@@ -1,16 +1,18 @@
-export type TransactionType = 'topup' | 'payment' | 'refund' | 'earning'
+export type TransactionType = 'topup' | 'payment' | 'checkout' | 'refund' | 'earning'
 
 export interface WalletTransaction {
   id: number
-  user_id: number
+  wallet_id: number
   type: TransactionType
-  amount: number
-  description: string
+  amount: string | number
+  status: string
+  description: string | null
   created_at: string
 }
 
 export interface Wallet {
-  balance: number
+  id: number
+  balance: string | number
   transactions: WalletTransaction[]
 }
 

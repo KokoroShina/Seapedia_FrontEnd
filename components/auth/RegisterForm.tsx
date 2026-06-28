@@ -63,7 +63,7 @@ export default function RegisterForm() {
       </h2>
       <p className="text-sm text-[#6B7280] mb-6">
         Sudah punya akun?{' '}
-        <Link href="/login" className="text-[#1B8AC4] font-medium hover:underline">
+        <Link href="/auth/login" className="text-[#1B8AC4] font-medium hover:underline">
           Masuk di sini
         </Link>
       </p>

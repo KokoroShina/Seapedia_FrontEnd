@@ -1,0 +1,17 @@
+{
+  "folders": [
+	{
+		"name": "seapedia_frontend",
+		"path": "../../.."
+	},
+	{
+		"name": "docs",
+		"path": "../../../../seapedia_backend/docs"
+	},
+	{
+		"name": "duitku_dokumentasi",
+		"path": "../../../../seapedia_backend/duitku_dokumentasi"
+	}
+],
+  "settings": {}
+}

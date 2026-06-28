@@ -234,7 +234,7 @@ function LoginForm() {
               Password
             </Label>
             <Link
-              href="/forgot-password"
+              href="/auth/forgot-password"
               className="text-xs text-[#0F6E56] hover:text-[#0F6E56]/80 transition-colors"
             >
               Lupa password?
@@ -307,7 +307,7 @@ function LoginForm() {
         >
           Belum punya akun?{" "}
           <Link
-            href="/register"
+            href="/auth/register"
             className="font-semibold text-[#0F6E56] hover:text-[#0F6E56]/80 transition-colors underline-offset-2 hover:underline"
           >
             Daftar sekarang
@@ -658,7 +658,7 @@ function RegisterForm() {
         >
           Sudah punya akun?{" "}
           <Link
-            href="/login"
+            href="/auth/login"
             className="font-semibold text-[#0F6E56] hover:text-[#0F6E56]/80 transition-colors underline-offset-2 hover:underline"
           >
             Masuk

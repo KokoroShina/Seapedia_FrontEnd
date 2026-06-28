@@ -98,7 +98,7 @@ export default function ForgotPasswordForm() {
         {/* Back to Login */}
         <div className="text-center">
           <Link
-            href="/login"
+            href="/auth/login"
             className="text-[13px] text-[#4A7A9B] hover:text-[#1B8AC4] transition-colors"
           >
             ← Kembali ke login

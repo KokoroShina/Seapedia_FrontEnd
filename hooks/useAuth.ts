@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import api from '@/lib/axios'
 import { useAuthStore } from '@/stores/authStore'
+import { useCartStore } from '@/stores/cartStore'
 
 interface LoginPayload {
   email: string
@@ -110,7 +111,8 @@ export function useAuth() {
     }
     await fetch('/api/auth/clear-cookie', { method: 'POST' })
     clearAuth()
-    router.push('/login')
+    useCartStore.getState().clearCart() // Clear cart on logout
+    router.push('/auth/login')
   }
 
   // Switch Role
@@ -155,7 +157,7 @@ export function useAuth() {
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('reset_email', email)
       }
-      router.push('/verify-otp')
+      router.push('/auth/verify-otp')
     } catch (err: unknown) {
       setLoading(false)
       const axiosError = err as { response?: { data?: { message?: string } } }
@@ -174,7 +176,7 @@ export function useAuth() {
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('reset_otp', otp)
       }
-      router.push('/reset-password')
+      router.push('/auth/reset-password')
     } catch (err: unknown) {
       setLoading(false)
       const axiosError = err as { response?: { data?: { message?: string } } }
@@ -199,7 +201,7 @@ export function useAuth() {
         sessionStorage.removeItem('reset_email')
         sessionStorage.removeItem('reset_otp')
       }
-      router.push('/login')
+      router.push('/auth/login')
     } catch (err: unknown) {
       setLoading(false)
       const axiosError = err as { response?: { data?: { message?: string } } }

@@ -1,12 +1,15 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { CartItem, Product } from '@/types/order'
+import api from '@/lib/axios'
+import type { CartItem } from '@/types/order'
+import type { Product } from '@/types/product'
 
 interface CartState {
   items: CartItem[]
   totalItems: number
   totalPrice: number
-  addItem: (product: Product, quantity?: number) => void
+  isSyncing: boolean
+  addItem: (product: Product, quantity?: number) => Promise<void>
   removeItem: (productId: number) => void
   updateQuantity: (productId: number, quantity: number) => void
   clearCart: () => void
@@ -19,33 +22,60 @@ export const useCartStore = create<CartState>()(
       items: [],
       totalItems: 0,
       totalPrice: 0,
+      isSyncing: false,
 
-      addItem: (product: Product, quantity = 1) => {
+      addItem: async (product: Product, quantity = 1) => {
+        // 1. Update local state first (optimistic update)
         const items = get().items
         const existingItem = items.find(item => item.product_id === product.id)
 
+        let updatedItems: CartItem[]
         if (existingItem) {
           // Merge: update quantity
-          const updatedItems = items.map(item =>
+          updatedItems = items.map(item =>
             item.product_id === product.id
               ? { ...item, quantity: item.quantity + quantity }
               : item
           )
-          const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0)
-          const totalPrice = updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-          set({ items: updatedItems, totalItems, totalPrice })
         } else {
           // Add new item
           const newItem: CartItem = {
-            id: Date.now(), // temporary id
+            id: Date.now(), // temporary id, will be replaced by API response
             product_id: product.id,
             quantity,
             product,
           }
-          const updatedItems = [...items, newItem]
-          const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0)
-          const totalPrice = updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-          set({ items: updatedItems, totalItems, totalPrice })
+          updatedItems = [...items, newItem]
+        }
+
+        // Calculate totals
+        const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0)
+        const totalPrice = updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
+
+        // 2. Update local state immediately
+        set({ items: updatedItems, totalItems, totalPrice })
+
+        // 3. Sync to API
+        try {
+          const response = await api.post('/cart/items', {
+            product_id: product.id,
+            quantity,
+          })
+
+          // Update with real id from API if needed
+          if (response.data?.data?.id) {
+            const apiItem = response.data.data
+            const newItems = updatedItems.map(item =>
+              item.product_id === product.id
+                ? { ...item, id: apiItem.id }
+                : item
+            )
+            set({ items: newItems })
+          }
+        } catch (error) {
+          console.error('Failed to sync cart to API:', error)
+          // Item tetap di localStorage, user tetap bisa lihat
+          // TODO: Show toast notification for error
         }
       },
 

@@ -21,17 +21,17 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-ocean-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-ocean-50 via-white to-cyan-50 flex flex-col">
       {/* Navbar */}
       <Navbar onSearch={handleSearch} />
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 pt-20 lg:pt-24">
         {/* Hero Section */}
         <HeroSection />
 
         {/* Category Bar */}
-        <section className="bg-white border-y border-ocean-100">
+        <section className="bg-white/60 backdrop-blur-sm border-y border-ocean-100">
           <div className="max-w-7xl mx-auto">
             <CategoryBar
               selectedCategory={category}
@@ -43,9 +43,12 @@ export default function HomePage() {
         {/* Products Section */}
         <section id="products-section" className="py-12 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-xl md:text-2xl font-bold text-ocean-700 mb-6">
-              Produk untuk Kamu
-            </h2>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-2 h-8 bg-gradient-to-b from-ocean-500 to-cyan-500 rounded-full" />
+              <h2 className="text-xl md:text-2xl font-bold text-ocean-800">
+                Produk untuk Kamu
+              </h2>
+            </div>
             <ProductGrid
               search={search}
               category={category}
