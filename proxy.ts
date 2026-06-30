@@ -55,6 +55,7 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
+  // Matcher for proxy middleware
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico|api/|illustrations/).*)',
   ],
