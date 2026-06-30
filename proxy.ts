@@ -20,11 +20,13 @@ export function proxy(req: NextRequest) {
   const role = req.cookies.get('seapedia_role')?.value
   const { pathname } = req.nextUrl
 
-  // Proxy /storage requests to backend Laravel on port 80
+  const LARAVEL_API_URL = process.env.LARAVEL_API_URL ?? "http://127.0.0.1:80";
+
+  // Proxy /storage requests to backend Laravel
   if (pathname.startsWith('/storage/')) {
     const backendUrl = new URL(req.url)
-    backendUrl.port = '80'
-    backendUrl.hostname = '127.0.0.1'
+    backendUrl.port = ''
+    backendUrl.hostname = LARAVEL_API_URL.replace(/^https?:\/\//, '')
     backendUrl.pathname = `/storage${pathname.replace('/storage', '')}`
     return NextResponse.rewrite(backendUrl)
   }
