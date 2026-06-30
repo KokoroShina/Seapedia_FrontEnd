@@ -21,12 +21,13 @@ export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   const LARAVEL_API_URL = process.env.LARAVEL_API_URL ?? "http://127.0.0.1:80";
+  const LARAVEL_URL_CLEAN = LARAVEL_API_URL.replace(/^https?:\/\//, '');
 
   // Proxy /storage requests to backend Laravel
   if (pathname.startsWith('/storage/')) {
     const backendUrl = new URL(req.url)
     backendUrl.port = ''
-    backendUrl.hostname = LARAVEL_API_URL.replace(/^https?:\/\//, '')
+    backendUrl.hostname = LARAVEL_URL_CLEAN
     backendUrl.pathname = `/storage${pathname.replace('/storage', '')}`
     return NextResponse.rewrite(backendUrl)
   }
