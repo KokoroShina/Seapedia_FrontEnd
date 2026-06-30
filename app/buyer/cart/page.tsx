@@ -11,8 +11,10 @@ import type { ApiResponse } from '@/types/api'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Store, Sparkles } from 'lucide-react'
+import { useCartStore } from '@/stores/cartStore'
+import { getImageUrl } from '@/lib/utils'
 
-interface CartItem {
+interface CartItemAPI {
   id: number
   product_id: number
   name: string
@@ -27,7 +29,7 @@ interface CartData {
     id: number
     name: string
   }
-  items: CartItem[]
+  items: CartItemAPI[]
   total: number
 }
 
@@ -37,16 +39,37 @@ export default function CartPage() {
   const [removingId, setRemovingId] = useState<number | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
 
+  // Get cart from localStorage (cartStore)
+  const { items: localItems, totalItems, totalPrice, removeItem: removeLocalItem, updateQuantity } = useCartStore()
+
+  // Try to fetch from API if logged in
   const { data: cart, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['cart'],
     queryFn: async () => {
       const res = await api.get<ApiResponse<CartData | null>>('/cart')
       return res.data.data
     },
-    staleTime: 0, // Always fetch fresh data
+    staleTime: 0,
     refetchOnMount: true,
     retry: 1,
+    // Only fetch if user is logged in (has token)
+    enabled: typeof window !== 'undefined' && !!localStorage.getItem('seapedia-auth'),
   })
+
+  // Use API data if available, otherwise use localStorage data
+  const cartData = cart || {
+    store: localItems[0]?.product?.store || { id: 0, name: 'Toko' },
+    items: localItems.map(item => ({
+      id: item.id,
+      product_id: item.product_id,
+      name: item.product?.name || 'Produk',
+      price: item.product?.price || '0',
+      quantity: item.quantity,
+      subtotal: parseFloat(String(item.product?.price || '0')) * item.quantity,
+      image: item.product?.image_url || item.product?.image,
+    })),
+    total: totalPrice,
+  }
 
   const updateQuantityMutation = useMutation({
     mutationFn: async ({ itemId, quantity }: { itemId: number; quantity: number }) => {
@@ -66,9 +89,14 @@ export default function CartPage() {
     },
   })
 
-  const handleQuantityChange = (itemId: number, currentQty: number, delta: number) => {
+  const handleQuantityChange = (itemId: number, currentQty: number, delta: number, productId: number) => {
     const newQty = currentQty + delta
     if (newQty < 1) return
+
+    // Update local storage first
+    updateQuantity(productId, newQty)
+
+    // Also try to update API if logged in
     updateQuantityMutation.mutate({ itemId, quantity: newQty })
   }
 
@@ -76,15 +104,18 @@ export default function CartPage() {
     setShowDeleteConfirm(itemId)
   }
 
-  const confirmRemove = () => {
-    if (showDeleteConfirm) {
-      setRemovingId(showDeleteConfirm)
-      setTimeout(() => {
-        removeItemMutation.mutate(showDeleteConfirm)
-        setRemovingId(null)
-        setShowDeleteConfirm(null)
-      }, 300)
-    }
+  const confirmRemove = (itemId: number, productId: number) => {
+    setRemovingId(itemId)
+    setTimeout(() => {
+      // Remove from local storage
+      removeLocalItem(productId)
+
+      // Also try to remove from API if logged in
+      removeItemMutation.mutate(itemId)
+
+      setRemovingId(null)
+      setShowDeleteConfirm(null)
+    }, 300)
   }
 
   const cancelRemove = () => {
@@ -99,7 +130,7 @@ export default function CartPage() {
     }).format(typeof price === 'string' ? parseFloat(price) : price)
   }
 
-  const isEmpty = !cart || !cart.items || cart.items.length === 0
+  const isEmpty = !cartData.items || cartData.items.length === 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ocean-50 via-white to-cyan-50 flex flex-col">
@@ -178,7 +209,7 @@ export default function CartPage() {
               <p className="text-ocean-500 mb-8 max-w-md mx-auto">
                 Sepertinya kamu belum menambahkan produk apapun. Ayo mulai belanja dan temukan seafood favoritmu!
               </p>
-              <Link href="/buyer">
+              <Link href="/">
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: "0 20px 40px -10px rgba(28, 138, 196, 0.3)" }}
                   whileTap={{ scale: 0.95 }}
@@ -202,9 +233,9 @@ export default function CartPage() {
                   <Store className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-white text-lg">{cart.store?.name}</p>
+                  <p className="font-bold text-white text-lg">{cartData.store?.name}</p>
                   <p className="text-ocean-100 text-sm">
-                    {cart.items.length} item{cart.items.length > 1 ? 's' : ''} • {formatPrice(cart.total)}
+                    {cartData.items.length} item{cartData.items.length > 1 ? 's' : ''} • {formatPrice(cartData.total)}
                   </p>
                 </div>
                 <div className="hidden sm:flex items-center gap-2 text-ocean-100 text-sm">
@@ -215,7 +246,7 @@ export default function CartPage() {
               {/* Cart Items */}
               <div className="space-y-4">
                 <AnimatePresence>
-                  {cart.items.map((item, index) => (
+                  {cartData.items.map((item, index) => (
                     <motion.div
                       key={item.id}
                       initial={{ opacity: 0, x: -30, scale: 0.95 }}
@@ -232,14 +263,14 @@ export default function CartPage() {
                     >
                       <div className="flex gap-4">
                         {/* Product Image */}
-                        <Link href={`/products/${item.product_id}`}>
+                        <Link href={`/buyer/products/${item.product_id}`}>
                           <motion.div
                             whileHover={{ scale: 1.05 }}
                             className="relative w-24 h-24 bg-gradient-to-br from-ocean-50 to-cyan-50 rounded-xl overflow-hidden flex-shrink-0 shadow-md"
                           >
-                            {item.image ? (
+                            {getImageUrl(item.image) ? (
                               <Image
-                                src={item.image}
+                                src={getImageUrl(item.image)}
                                 alt={item.name}
                                 fill
                                 className="object-cover"
@@ -255,7 +286,7 @@ export default function CartPage() {
                         {/* Product Info */}
                         <div className="flex-1 min-w-0">
                           <Link
-                            href={`/products/${item.product_id}`}
+                            href={`/buyer/products/${item.product_id}`}
                             className="font-bold text-ocean-800 hover:text-ocean-600 transition-colors line-clamp-2 text-lg"
                           >
                             {item.name}
@@ -274,7 +305,7 @@ export default function CartPage() {
                             >
                               <motion.button
                                 whileTap={{ scale: 0.9 }}
-                                onClick={() => handleQuantityChange(item.id, item.quantity, -1)}
+                                onClick={() => handleQuantityChange(item.id, item.quantity, -1, item.product_id)}
                                 disabled={updateQuantityMutation.isPending || item.quantity <= 1}
                                 className="p-2.5 hover:bg-ocean-50 transition-colors disabled:opacity-50"
                               >
@@ -285,7 +316,7 @@ export default function CartPage() {
                               </span>
                               <motion.button
                                 whileTap={{ scale: 0.9 }}
-                                onClick={() => handleQuantityChange(item.id, item.quantity, 1)}
+                                onClick={() => handleQuantityChange(item.id, item.quantity, 1, item.product_id)}
                                 disabled={updateQuantityMutation.isPending}
                                 className="p-2.5 hover:bg-ocean-50 transition-colors disabled:opacity-50"
                               >
@@ -335,7 +366,7 @@ export default function CartPage() {
                                 <motion.button
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
-                                  onClick={confirmRemove}
+                                  onClick={() => confirmRemove(item.id, item.product_id)}
                                   className="px-6 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30"
                                 >
                                   Hapus
@@ -359,9 +390,9 @@ export default function CartPage() {
               >
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center justify-between">
-                    <span className="text-ocean-600">Subtotal ({cart.items.length} item)</span>
+                    <span className="text-ocean-600">Subtotal ({cartData.items.length} item)</span>
                     <span className="font-semibold text-ocean-800">
-                      {formatPrice(cart.total)}
+                      {formatPrice(cartData.total)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm text-ocean-500">
@@ -383,7 +414,7 @@ export default function CartPage() {
                     <p className="text-xs text-ocean-400">Termasuk PPN</p>
                   </div>
                   <span className="text-2xl lg:text-3xl font-black bg-gradient-to-r from-ocean-600 to-cyan-600 bg-clip-text text-transparent">
-                    {formatPrice(cart.total)}
+                    {formatPrice(cartData.total)}
                   </span>
                 </div>
 

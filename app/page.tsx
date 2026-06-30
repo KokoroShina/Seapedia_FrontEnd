@@ -6,6 +6,7 @@ import Footer from '@/components/shared/Footer'
 import HeroSection from '@/components/landing/HeroSection'
 import CategoryBar from '@/components/landing/CategoryBar'
 import ProductGrid from '@/components/landing/ProductGrid'
+import ReviewsGrid from '@/components/landing/ReviewsGrid'
 
 export default function HomePage() {
   const [search, setSearch] = useState<string>('')
@@ -54,6 +55,13 @@ export default function HomePage() {
               category={category}
               sort={sort}
             />
+          </div>
+        </section>
+
+        {/* App Reviews Section */}
+        <section className="py-12 bg-white border-t border-ocean-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ReviewsGrid />
           </div>
         </section>
       </main>

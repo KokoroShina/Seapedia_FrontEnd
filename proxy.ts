@@ -6,7 +6,7 @@ const PUBLIC_PATHS = [
   '/auth/register',
   '/auth/forgot-password',
   '/auth/verify-otp',
-  '/auth/reset-password'
+  '/auth/reset-password',
 ]
 
 const ROLE_PATHS: Record<string, string> = {
@@ -19,6 +19,15 @@ export function proxy(req: NextRequest) {
   const token = req.cookies.get('seapedia_token')?.value
   const role = req.cookies.get('seapedia_role')?.value
   const { pathname } = req.nextUrl
+
+  // Proxy /storage requests to backend Laravel on port 80
+  if (pathname.startsWith('/storage/')) {
+    const backendUrl = new URL(req.url)
+    backendUrl.port = '80'
+    backendUrl.hostname = '127.0.0.1'
+    backendUrl.pathname = `/storage${pathname.replace('/storage', '')}`
+    return NextResponse.rewrite(backendUrl)
+  }
 
   // Cek apakah path termasuk public path secara presisi
   const isPublicPath = PUBLIC_PATHS.some((p) => {
@@ -45,6 +54,6 @@ export function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/|illustrations/).*)',
   ],
 }

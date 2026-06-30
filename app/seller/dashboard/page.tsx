@@ -6,25 +6,15 @@ import api from '@/lib/axios'
 import type { ApiResponse } from '@/types/api'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
-import { 
-  Store, Package, ShoppingBag, TrendingUp, 
+import {
+  Store, Package, ShoppingBag, TrendingUp,
   ChevronRight, Clock, AlertCircle
 } from 'lucide-react'
 
-interface StoreData {
-  id: number
-  name: string
-  description: string
-  image: string | null
-}
-
-interface OrderSummary {
+interface DashboardStats {
   total_orders: number
   pending_orders: number
   completed_orders: number
-}
-
-interface ProductSummary {
   total_products: number
   low_stock: number
 }
@@ -34,54 +24,45 @@ export default function SellerDashboardPage() {
   const { data: store } = useQuery({
     queryKey: ['seller-store'],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<StoreData>>('/seller/store')
+      const res = await api.get<ApiResponse<{ id: number; name: string; description: string; image: string | null }>>('/seller/store')
       return res.data.data
     },
   })
 
-  // Fetch orders summary
-  const { data: ordersSummary } = useQuery({
-    queryKey: ['seller-orders-summary'],
+  // Fetch dashboard stats (single endpoint for all stats)
+  const { data: stats } = useQuery({
+    queryKey: ['seller-dashboard'],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<OrderSummary>>('/seller/orders/summary')
+      const res = await api.get<ApiResponse<DashboardStats>>('/seller/dashboard')
       return res.data.data
     },
   })
 
-  // Fetch products summary
-  const { data: productsSummary } = useQuery({
-    queryKey: ['seller-products-summary'],
-    queryFn: async () => {
-      const res = await api.get<ApiResponse<ProductSummary>>('/seller/products/summary')
-      return res.data.data
-    },
-  })
-
-  const stats = [
+  const statsCards = [
     {
       title: 'Total Pesanan',
-      value: ordersSummary?.total_orders || 0,
+      value: stats?.total_orders || 0,
       icon: ShoppingBag,
       color: 'bg-blue-500',
       href: '/seller/orders',
     },
     {
       title: 'Pesanan Pending',
-      value: ordersSummary?.pending_orders || 0,
+      value: stats?.pending_orders || 0,
       icon: Clock,
       color: 'bg-yellow-500',
       href: '/seller/orders?status=sedang_dikemas',
     },
     {
       title: 'Produk Saya',
-      value: productsSummary?.total_products || 0,
+      value: stats?.total_products || 0,
       icon: Package,
       color: 'bg-green-500',
       href: '/seller/products',
     },
     {
       title: 'Stok Rendah',
-      value: productsSummary?.low_stock || 0,
+      value: stats?.low_stock || 0,
       icon: AlertCircle,
       color: 'bg-red-500',
       href: '/seller/products',
@@ -140,7 +121,7 @@ export default function SellerDashboardPage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {stats.map((stat) => {
+          {statsCards.map((stat) => {
             const Icon = stat.icon
             return (
               <Link

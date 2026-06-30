@@ -10,17 +10,20 @@ export interface Store {
 
 export interface Product {
   id: number
-  store_id: number
+  store_id?: number
   name: string
-  description: string
-  price: number
+  description?: string
+  price: number | string
   stock: number
-  image_url: string | null
-  created_at: string
-  updated_at: string
+  image?: string
+  image_url?: string | null
+  category_id?: number
+  created_at?: string
+  updated_at?: string
   store?: Store
   average_rating?: number
   review_count?: number
+  sold_count?: number
 }
 
 export interface Review {

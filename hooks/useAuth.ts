@@ -68,8 +68,18 @@ export function useAuth() {
       })
       setToken(token)
       setAuth(user as any, active_role as any, roles)
+
+      // Redirect based on role
+      const redirectMap: Record<string, string> = {
+        admin: '/admin',
+        seller: '/seller/dashboard',
+        driver: '/driver/dashboard',
+        buyer: '/',
+      }
+      const redirectPath = redirectMap[active_role] || '/'
+
       setLoading(false)
-      router.push('/')
+      router.push(redirectPath)
     } catch (err: unknown) {
       setLoading(false)
       const axiosError = err as { response?: { data?: { message?: string } } }

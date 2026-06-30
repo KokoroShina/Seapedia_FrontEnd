@@ -8,7 +8,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Star, ShoppingCart, Package, Check } from 'lucide-react'
 import { useCartStore } from '@/stores/cartStore'
 import { useToast } from '@/components/animations/Toast'
-import { formatRupiah } from '@/lib/utils'
+import { formatRupiah, getImageUrl } from '@/lib/utils'
 import type { Product } from '@/types/product'
 
 interface ProductCardProps {
@@ -94,7 +94,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <Link href={`/products/${product.id}`}>
+    <Link href={`/buyer/products/${product.id}`}>
       <motion.div
         whileHover={{ y: -8, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
@@ -134,29 +134,23 @@ export default function ProductCard({ product }: ProductCardProps) {
                 overflow: 'hidden',
               }}
             >
-              {product.image_url ? (
-                <Image
-                  src={product.image_url}
-                  alt={product.name}
-                  width={60}
-                  height={60}
-                  className="w-full h-full object-cover"
-                  unoptimized
-                />
-              ) : (
-                <div className="w-full h-full bg-ocean-100 flex items-center justify-center">
-                  <Package className="w-8 h-8 text-ocean-300" />
-                </div>
-              )}
+              <Image
+                src={getImageUrl(product.image_url || product.image)}
+                alt={product.name}
+                width={60}
+                height={60}
+                className="w-full h-full object-cover"
+                unoptimized
+              />
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Product Image */}
         <div ref={imageRef} className="relative aspect-square bg-gradient-to-br from-ocean-50 to-cyan-50 overflow-hidden">
-          {product.image_url ? (
+          {product.image_url || product.image ? (
             <Image
-              src={product.image_url}
+              src={getImageUrl(product.image_url || product.image)}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -164,9 +158,9 @@ export default function ProductCard({ product }: ProductCardProps) {
               unoptimized
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-ocean-200">
-              <Package className="w-16 h-16 mb-2" />
-              <span className="text-sm">No Image</span>
+            <div className="w-full h-full flex flex-col items-center justify-center text-ocean-300">
+              <Package className="w-16 h-16" />
+              <span className="text-sm mt-2">No Image</span>
             </div>
           )}
 
@@ -201,7 +195,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           {/* Price */}
           <div className="flex items-center gap-2">
             <p className="text-lg font-black bg-gradient-to-r from-ocean-600 to-cyan-600 bg-clip-text text-transparent">
-              {formatRupiah(product.price)}
+              {formatRupiah(Number(product.price))}
             </p>
           </div>
 

@@ -49,7 +49,7 @@ export default function AuthLayout() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={isLogin ? "/illustrations/login.svg" : "/illustrations/register.svg"}
+              src={isLogin ? "/illustrations/auth-login.svg" : "/illustrations/auth-register.svg"}
               alt={isLogin ? "Login illustration" : "Register illustration"}
               className="w-full h-auto drop-shadow-lg"
               onError={(e) => {

@@ -33,7 +33,7 @@ interface ActiveDelivery {
   }
 }
 
-interface Stats {
+interface DashboardStats {
   total_deliveries: number
   completed_deliveries: number
   total_earnings: number
@@ -51,9 +51,9 @@ export default function DriverDashboardPage() {
 
   // Fetch stats
   const { data: stats } = useQuery({
-    queryKey: ['driver-stats'],
+    queryKey: ['driver-dashboard'],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<Stats>>('/driver/stats')
+      const res = await api.get<ApiResponse<DashboardStats>>('/driver/dashboard')
       return res.data.data
     },
   })
@@ -148,7 +148,7 @@ export default function DriverDashboardPage() {
             </div>
 
             <Link
-              href="/driver/jobs/active"
+              href="/driver/active"
               className="w-full flex items-center justify-center gap-2 bg-white text-blue-600 py-4 rounded-xl font-bold hover:bg-blue-50 transition-colors shadow-lg"
             >
               <Package className="w-5 h-5" />
@@ -223,7 +223,7 @@ export default function DriverDashboardPage() {
           </Link>
 
           <Link
-            href="/driver/jobs/history"
+            href="/driver/history"
             className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md hover:border-slate-300 transition-all group"
           >
             <div className="flex items-center gap-4">

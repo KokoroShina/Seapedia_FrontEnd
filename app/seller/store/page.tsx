@@ -8,9 +8,10 @@ import api from '@/lib/axios'
 import type { ApiResponse } from '@/types/api'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
-import { 
+import {
   Store, Camera, Save, X, CheckCircle, Loader2
 } from 'lucide-react'
+import { getImageUrl } from '@/lib/utils'
 
 interface StoreData {
   id: number
@@ -151,7 +152,7 @@ export default function SellerStorePage() {
             <div className="relative h-40 bg-gradient-to-br from-ocean-500 to-ocean-600">
               {store && store.image && (
                 <img
-                  src={store.image}
+                  src={getImageUrl(store.image)}
                   alt={store.name}
                   className="w-full h-full object-cover"
                 />
@@ -165,7 +166,7 @@ export default function SellerStorePage() {
                 <div className="w-24 h-24 bg-white rounded-xl shadow-lg overflow-hidden flex items-center justify-center">
                   {store && store.image ? (
                     <img
-                      src={store.image}
+                      src={getImageUrl(store.image)}
                       alt={store.name}
                       className="w-full h-full object-cover"
                     />
@@ -207,15 +208,8 @@ export default function SellerStorePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
         <Navbar onSearch={() => {}} />
-        
-        <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* No Store Banner */}
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
-            <p className="text-amber-700 text-center">
-              Anda belum memiliki toko. Silakan buat toko baru untuk mulai berjualan.
-            </p>
-          </div>
 
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-slate-800">Buat Toko Baru</h1>
             <p className="text-slate-500 mt-1">Mulai berjualan dengan membuat toko</p>

@@ -14,121 +14,7 @@ interface ProductGridProps {
   sort?: string
 }
 
-// Mock products with Unsplash images (fallback when API is empty)
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: 1,
-    store_id: 1,
-    name: "Ikan Salmon Segar Premium",
-    description: "Salmon segar langsung dari laut",
-    price: 89000,
-    stock: 50,
-    image_url: "https://images.unsplash.com/photo-1574781330855-d0db8cc6a79c?w=400&h=400&fit=crop",
-    average_rating: 4.8,
-    review_count: 124,
-    store: { id: 1, user_id: 1, name: "Ocean Fresh", description: "Ikan segar laut", address: "Jakarta", created_at: "", updated_at: "" },
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: 2,
-    store_id: 2,
-    name: "Udang Windu Jumbo",
-    description: "Udang windu ukuran jumbo",
-    price: 158000,
-    stock: 30,
-    image_url: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&h=400&fit=crop",
-    average_rating: 4.9,
-    review_count: 89,
-    store: { id: 2, user_id: 2, name: "Sea Harvest", description: "Hasil laut segar", address: "Surabaya", created_at: "", updated_at: "" },
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: 3,
-    store_id: 3,
-    name: "Kepiting Rajungan Segar",
-    description: "Kepiting rajungan langsung dari laut",
-    price: 389000,
-    stock: 25,
-    image_url: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=400&fit=crop",
-    average_rating: 4.7,
-    review_count: 203,
-    store: { id: 3, user_id: 3, name: "Maritime Delight", description: "Seafood premium", address: "Makassar", created_at: "", updated_at: "" },
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: 4,
-    store_id: 4,
-    name: "Cumi-cumi Segar",
-    description: "Cumi-cumi segar berkualitas",
-    price: 125000,
-    stock: 15,
-    image_url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=400&fit=crop",
-    average_rating: 4.6,
-    review_count: 56,
-    store: { id: 4, user_id: 4, name: "Deep Sea Catch", description: "Hasil laut dalam", address: "Bali", created_at: "", updated_at: "" },
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: 5,
-    store_id: 5,
-    name: "Kerang Hijau Segar",
-    description: "Kerang hijau pilihan",
-    price: 45000,
-    stock: 100,
-    image_url: "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=400&h=400&fit=crop",
-    average_rating: 4.5,
-    review_count: 312,
-    store: { id: 5, user_id: 5, name: "Coastal Fresh", description: "Seafood coastal", address: "Bandung", created_at: "", updated_at: "" },
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: 6,
-    store_id: 6,
-    name: "Ikan Tongkol Segar",
-    description: "Ikan tongkol laut dalam",
-    price: 175000,
-    stock: 40,
-    image_url: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=400&h=400&fit=crop",
-    average_rating: 4.8,
-    review_count: 78,
-    store: { id: 6, user_id: 6, name: "Fresh Catch ID", description: "Ikan segar daily", address: "Semarang", created_at: "", updated_at: "" },
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: 7,
-    store_id: 7,
-    name: "Udang Vaname Premium",
-    description: "Udang vaname kualitas export",
-    price: 295000,
-    stock: 20,
-    image_url: "https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=400&h=400&fit=crop",
-    average_rating: 4.7,
-    review_count: 145,
-    store: { id: 7, user_id: 7, name: "Aqua Farm Fresh", description: "Budidaya berkualitas", address: "Yogyakarta", created_at: "", updated_at: "" },
-    created_at: "",
-    updated_at: ""
-  },
-  {
-    id: 8,
-    store_id: 8,
-    name: "Ikan Kakap Merah",
-    description: "Kakap merah segar pilihan",
-    price: 65000,
-    stock: 60,
-    image_url: "https://images.unsplash.com/photo-1485921325833-c519f76c4927?w=400&h=400&fit=crop",
-    average_rating: 4.6,
-    review_count: 98,
-    store: { id: 8, user_id: 8, name: "Reef Seafood", description: "Premium seafood", address: "Medan", created_at: "", updated_at: "" },
-    created_at: "",
-    updated_at: ""
-  }
-]
+// No mock products - use API data only
 
 const sortOptions = [
   { value: 'newest', label: 'Terbaru' },
@@ -177,8 +63,8 @@ export default function ProductGrid({ search, category, sort = 'newest' }: Produ
     )
   }
 
-  // Use API data if available, otherwise use mock data
-  const products: Product[] = data?.data && data.data.length > 0 ? data.data : MOCK_PRODUCTS
+  // Use API data if available, otherwise use empty array
+  const products: Product[] = data?.data && data.data.length > 0 ? data.data : []
 
   const selectedSortLabel = sortOptions.find(opt => opt.value === localSort)?.label || 'Terbaru'
 
@@ -192,7 +78,7 @@ export default function ProductGrid({ search, category, sort = 'newest' }: Produ
       {/* Enhanced Sort Dropdown */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-ocean-500">
-          {isLoading ? 'Memuat...' : `${products.length} produk ditemukan`}
+          {isLoading ? 'Memuat...' : products.length > 0 ? `${products.length} produk ditemukan` : 'Tidak ada produk'}
         </p>
 
         {/* Custom Sort Dropdown */}

@@ -9,11 +9,14 @@ interface CartState {
   totalItems: number
   totalPrice: number
   isSyncing: boolean
+  currentStoreId: number | null
+  currentStoreName: string | null
   addItem: (product: Product, quantity?: number) => Promise<void>
   removeItem: (productId: number) => void
   updateQuantity: (productId: number, quantity: number) => void
   clearCart: () => void
   syncWithApi: () => Promise<void>
+  hasItemsFromOtherStore: (storeId: number) => boolean
 }
 
 export const useCartStore = create<CartState>()(
@@ -23,13 +26,20 @@ export const useCartStore = create<CartState>()(
       totalItems: 0,
       totalPrice: 0,
       isSyncing: false,
+      currentStoreId: null,
+      currentStoreName: null,
 
       addItem: async (product: Product, quantity = 1) => {
         // 1. Update local state first (optimistic update)
         const items = get().items
         const existingItem = items.find(item => item.product_id === product.id)
+        const currentStoreId = get().currentStoreId
 
         let updatedItems: CartItem[]
+
+        // Check if item is from different store
+        const isFromDifferentStore = currentStoreId && product.store_id && currentStoreId !== product.store_id
+
         if (existingItem) {
           // Merge: update quantity
           updatedItems = items.map(item =>
@@ -48,12 +58,18 @@ export const useCartStore = create<CartState>()(
           updatedItems = [...items, newItem]
         }
 
+        // Update store info
+        set({
+          currentStoreId: product.store_id,
+          currentStoreName: product.store?.name || null,
+        })
+
         // Calculate totals
         const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0)
-        const totalPrice = updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
+        const totalPrice = updatedItems.reduce((sum, item) => sum + (Number(item.product.price) * item.quantity), 0)
 
         // 2. Update local state immediately
-        set({ items: updatedItems, totalItems, totalPrice })
+        set({ items: updatedItems, totalItems, totalPrice, currentStoreId: product.store_id, currentStoreName: product.store?.name || null })
 
         // 3. Sync to API
         try {
@@ -79,11 +95,22 @@ export const useCartStore = create<CartState>()(
         }
       },
 
+      hasItemsFromOtherStore: (storeId: number) => {
+        const currentStore = get().currentStoreId
+        return currentStore !== null && currentStore !== storeId && get().items.length > 0
+      },
+
       removeItem: (productId: number) => {
         const items = get().items.filter(item => item.product_id !== productId)
         const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
-        const totalPrice = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-        set({ items, totalItems, totalPrice })
+        const totalPrice = items.reduce((sum, item) => sum + (Number(item.product.price) * item.quantity), 0)
+
+        // Clear store info if cart is empty
+        if (items.length === 0) {
+          set({ items, totalItems, totalPrice, currentStoreId: null, currentStoreName: null })
+        } else {
+          set({ items, totalItems, totalPrice })
+        }
       },
 
       updateQuantity: (productId: number, quantity: number) => {
@@ -96,12 +123,12 @@ export const useCartStore = create<CartState>()(
           item.product_id === productId ? { ...item, quantity } : item
         )
         const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
-        const totalPrice = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
+        const totalPrice = items.reduce((sum, item) => sum + (Number(item.product.price) * item.quantity), 0)
         set({ items, totalItems, totalPrice })
       },
 
       clearCart: () => {
-        set({ items: [], totalItems: 0, totalPrice: 0 })
+        set({ items: [], totalItems: 0, totalPrice: 0, currentStoreId: null, currentStoreName: null })
       },
 
       syncWithApi: async () => {
@@ -115,6 +142,8 @@ export const useCartStore = create<CartState>()(
         items: state.items,
         totalItems: state.totalItems,
         totalPrice: state.totalPrice,
+        currentStoreId: state.currentStoreId,
+        currentStoreName: state.currentStoreName,
       }),
     }
   )

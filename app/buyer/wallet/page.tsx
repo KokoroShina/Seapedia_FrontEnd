@@ -254,7 +254,7 @@ export default function WalletPage() {
                         )}
                       </div>
                       <p className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                        {isPositive ? '+' : '-'} {formatPrice(Math.abs(tx.amount))}
+                        {isPositive ? '+' : '-'} {formatPrice(Math.abs(Number(tx.amount)))}
                       </p>
                     </div>
                   )

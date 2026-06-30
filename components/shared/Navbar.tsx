@@ -17,6 +17,8 @@ import {
   ClipboardList,
   Truck,
   Store,
+  LayoutDashboard,
+  Shield,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useCartStore } from "@/stores/cartStore";
@@ -96,6 +98,10 @@ export default function Navbar({ onSearch }: NavbarProps) {
     setIsMobileMenuOpen(false);
   };
 
+  const adminLinks = [
+    { href: "/admin", label: "Dashboard", icon: Shield },
+  ];
+
   const buyerLinks = [
     { href: "/", label: "Beranda", icon: Home },
     { href: "/buyer/products", label: "Produk", icon: Package },
@@ -104,14 +110,14 @@ export default function Navbar({ onSearch }: NavbarProps) {
   ];
 
   const sellerLinks = [
-    { href: "/seller/dashboard", label: "Dashboard", icon: Home },
+    { href: "/seller/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/seller/store", label: "Toko", icon: Store },
     { href: "/seller/products", label: "Produk", icon: Package },
     { href: "/seller/orders", label: "Pesanan", icon: ClipboardList },
   ];
 
   const driverLinks = [
-    { href: "/driver/dashboard", label: "Dashboard", icon: Home },
+    { href: "/driver/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/driver/active", label: "Delivery Aktif", icon: Truck },
     { href: "/driver/jobs", label: "Job Tersedia", icon: Package },
     { href: "/driver/history", label: "Riwayat", icon: ClipboardList },
@@ -119,6 +125,8 @@ export default function Navbar({ onSearch }: NavbarProps) {
 
   const getNavLinks = () => {
     switch (activeRole) {
+      case "admin":
+        return adminLinks;
       case "seller":
         return sellerLinks;
       case "driver":
@@ -136,8 +144,25 @@ export default function Navbar({ onSearch }: NavbarProps) {
         return "bg-gradient-to-r from-emerald-400 to-emerald-600";
       case "driver":
         return "bg-gradient-to-r from-amber-400 to-amber-600";
+      case "admin":
+        return "bg-gradient-to-r from-purple-400 to-purple-600";
       default:
         return "bg-ocean-500";
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case "buyer":
+        return "Pembeli";
+      case "seller":
+        return "Penjual";
+      case "driver":
+        return "Driver";
+      case "admin":
+        return "Admin";
+      default:
+        return role;
     }
   };
 
@@ -267,11 +292,7 @@ export default function Navbar({ onSearch }: NavbarProps) {
                           activeRole || ""
                         )}`}
                       >
-                        {activeRole === "buyer"
-                          ? "Pembeli"
-                          : activeRole === "seller"
-                          ? "Penjual"
-                          : "Driver"}
+                        {getRoleLabel(activeRole || "")}
                       </span>
                     </div>
                     <motion.div

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -19,6 +19,7 @@ import {
   Lock,
 } from "lucide-react";
 import Link from "next/link";
+import SuccessModal from "@/components/shared/SuccessModal";
 
 interface CartItem {
   id: number;
@@ -48,15 +49,33 @@ interface Address {
   is_default: boolean;
 }
 
+interface Promo {
+  id: number;
+  code: string;
+  value: number;
+  min_purchase: number;
+  expired_at: string;
+}
+
+interface VoucherValidation {
+  id: number;
+  code: string;
+  value: number;
+  min_purchase: number;
+  expired_at: string;
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null);
   const [deliveryMethod, setDeliveryMethod] = useState<
     "instant" | "next_day" | "regular"
   >("regular");
-  const [voucherCode, setVoucherCode] = useState("")
-  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string } | null>(null)
+  const [voucherCode, setVoucherCode] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState<VoucherValidation | null>(null);
   const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [orderData, setOrderData] = useState<any>(null);
 
   const { data: cart, isLoading: cartLoading } = useQuery({
     queryKey: ["cart"],
@@ -83,6 +102,34 @@ export default function CheckoutPage() {
     },
   });
 
+  // Fetch available promos for auto-apply calculation
+  const { data: promos } = useQuery({
+    queryKey: ["promos"],
+    queryFn: async () => {
+      const res = await api.get<ApiResponse<Promo[]>>("/promos");
+      return res.data.data || [];
+    },
+  });
+
+  // Validate voucher code
+  const validateVoucherMutation = useMutation({
+    mutationFn: async (code: string) => {
+      const res = await api.get<ApiResponse<VoucherValidation>>(`/vouchers/${code}`);
+      return res.data.data;
+    },
+    onSuccess: (data) => {
+      if (data) {
+        setAppliedVoucher(data);
+        setVoucherError(null);
+        setVoucherCode("");
+      }
+    },
+    onError: (error: any) => {
+      setVoucherError(error.response?.data?.message || "Voucher tidak valid");
+      setAppliedVoucher(null);
+    },
+  });
+
   const checkoutMutation = useMutation({
     mutationFn: async (data: {
       address_id: number;
@@ -92,14 +139,20 @@ export default function CheckoutPage() {
       return api.post("/checkout", data);
     },
     onSuccess: (response) => {
-      alert("Checkout berhasil! Order sedang diproses.");
+      const order = response.data.data;
+      setOrderData(order);
+      setShowSuccessModal(true);
       useCartStore.getState().clearCart();
-      router.push("/buyer/orders");
     },
     onError: (error: any) => {
       alert(error.response?.data?.message || "Checkout gagal");
     },
   });
+
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    router.push("/buyer/orders");
+  };
 
   const formatPrice = (price: string | number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -137,9 +190,35 @@ export default function CheckoutPage() {
   const deliveryFee = selectedDelivery?.price || 0;
   const subtotal = cart?.total || 0;
 
-  // Voucher value determined by backend at checkout — show placeholder
-  const voucherValue = appliedVoucher ? 0 : 0;
-  const discountAmount = Math.round(subtotal * voucherValue / 100);
+  // Calculate applicable promo - valid, meets min_purchase, highest value
+  const applicablePromo = useMemo(() => {
+    if (!promos || promos.length === 0) return null;
+
+    const now = new Date();
+    const validPromos = promos.filter((promo) => {
+      const isValid = new Date(promo.expired_at) > now;
+      const meetsMinPurchase = subtotal >= parseFloat(String(promo.min_purchase));
+      return isValid && meetsMinPurchase;
+    });
+
+    if (validPromos.length === 0) return null;
+
+    // Sort by value descending and pick the highest
+    const sorted = [...validPromos].sort((a, b) => parseFloat(String(b.value)) - parseFloat(String(a.value)));
+    return sorted[0];
+  }, [promos, subtotal]);
+
+  // Voucher + Promo stacking calculation
+  const promoValue = applicablePromo ? parseFloat(String(applicablePromo.value)) : 0;
+  const voucherValue = appliedVoucher ? parseFloat(String(appliedVoucher.value)) : 0;
+  const totalDiscountPercent = promoValue + voucherValue;
+
+  // Calculate discount amounts
+  const promoDiscountAmount = Math.round(subtotal * promoValue / 100);
+  const voucherDiscountAmount = Math.round(subtotal * voucherValue / 100);
+  const discountAmount = promoDiscountAmount + voucherDiscountAmount;
+
+  // PPN calculated on subtotal BEFORE discount
   const ppnAmount = Math.round(subtotal * 0.12);
   const total = subtotal + deliveryFee + ppnAmount - discountAmount;
 
@@ -158,9 +237,8 @@ export default function CheckoutPage() {
   const applyVoucher = () => {
     if (!voucherCode.trim()) return;
     setVoucherError(null);
-    // Voucher will be validated by backend at checkout time
-    setAppliedVoucher({ code: voucherCode.toUpperCase() });
-    setVoucherCode("");
+    // Validate voucher via backend
+    validateVoucherMutation.mutate(voucherCode.trim().toUpperCase());
   };
 
   const removeVoucher = () => {
@@ -201,7 +279,7 @@ export default function CheckoutPage() {
               Tambahkan produk ke keranjang terlebih dahulu
             </p>
             <Link
-              href="/buyer"
+              href="/"
               className="inline-flex items-center gap-2 bg-ocean-500 text-white py-3 px-6 rounded-xl font-semibold hover:bg-ocean-600 transition-colors"
             >
               Mulai Belanja
@@ -391,14 +469,14 @@ export default function CheckoutPage() {
                   onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
                   placeholder="Masukkan kode voucher"
                   className="flex-1 px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-ocean-500 focus:border-transparent"
-                  disabled={!!appliedVoucher}
+                  disabled={!!appliedVoucher || validateVoucherMutation.isPending}
                 />
                 <button
                   onClick={applyVoucher}
-                  disabled={!voucherCode.trim() || !!appliedVoucher}
+                  disabled={!voucherCode.trim() || !!appliedVoucher || validateVoucherMutation.isPending}
                   className="px-6 py-3 bg-ocean-500 text-white font-semibold rounded-xl hover:bg-ocean-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Pakai
+                  {validateVoucherMutation.isPending ? "Memuat..." : "Pakai"}
                 </button>
               </div>
               {voucherError && (
@@ -409,10 +487,21 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-ocean-600" />
                     <span className="font-semibold text-ocean-700">{appliedVoucher.code}</span>
+                    <span className="text-sm text-ocean-600">({appliedVoucher.value}%)</span>
                   </div>
                   <button onClick={removeVoucher} className="text-sm text-red-500 hover:text-red-600 font-medium">
                     Hapus
                   </button>
+                </div>
+              )}
+              {applicablePromo && (
+                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-700">
+                      Promo otomatis: {applicablePromo.code} ({applicablePromo.value}%)
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
@@ -461,20 +550,40 @@ export default function CheckoutPage() {
                   <span>Subtotal</span>
                   <span className="font-medium">{formatPrice(subtotal)}</span>
                 </div>
+
+                {/* Promo discount line */}
+                {applicablePromo && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Promo ({applicablePromo.value}%)</span>
+                    <span className="font-medium">-{formatPrice(promoDiscountAmount)}</span>
+                  </div>
+                )}
+
+                {/* Voucher discount line */}
+                {appliedVoucher && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Voucher {appliedVoucher.code} ({appliedVoucher.value}%)</span>
+                    <span className="font-medium">-{formatPrice(voucherDiscountAmount)}</span>
+                  </div>
+                )}
+
+                {/* Combined discount row */}
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-green-600 font-semibold">
+                    <span>Diskon</span>
+                    <span className="font-medium">-{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between text-slate-600">
                   <span>Pengiriman</span>
                   <span className="font-medium">{formatPrice(deliveryFee)}</span>
                 </div>
+
                 <div className="flex justify-between text-slate-600">
                   <span>PPN (12%)</span>
                   <span className="font-medium">{formatPrice(ppnAmount)}</span>
                 </div>
-                {appliedVoucher && (
-                  <div className="flex justify-between text-slate-600">
-                    <span>Voucher</span>
-                    <span className="font-medium text-ocean-600">Akan dicek saat bayar</span>
-                  </div>
-                )}
               </div>
 
               <div className="flex justify-between pt-4 mt-4 border-t border-slate-200">
@@ -502,6 +611,13 @@ export default function CheckoutPage() {
       </main>
 
       <Footer />
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleCloseModal}
+        order={orderData}
+      />
     </div>
   );
 }

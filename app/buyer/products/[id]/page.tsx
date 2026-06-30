@@ -1,15 +1,18 @@
 'use client'
 
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import api from '@/lib/axios'
 import type { ApiResponse } from '@/types/api'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
+import ReplaceCartModal from '@/components/shared/ReplaceCartModal'
 import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Store } from 'lucide-react'
 import Link from 'next/link'
+import { getImageUrl } from '@/lib/utils'
+import { useCartStore } from '@/stores/cartStore'
 
 interface ProductDetail {
   id: number
@@ -28,6 +31,7 @@ interface ProductDetail {
 }
 
 interface Review {
+  product_id?: number
   reviewer_name: string
   rating: number
   comment: string
@@ -37,12 +41,24 @@ interface Review {
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const productId = params.id as string
   
   const [quantity, setQuantity] = useState(1)
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description')
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewComment, setReviewComment] = useState('')
+  const [showReplaceModal, setShowReplaceModal] = useState(false)
+  const [pendingProduct, setPendingProduct] = useState<{ product: ProductDetail; quantity: number } | null>(null)
+  const { addItem, clearCart, currentStoreName, hasItemsFromOtherStore } = useCartStore()
+
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token')
+    setIsLoggedIn(!!token)
+  }, [])
 
   const { data: product, isLoading: productLoading } = useQuery({
     queryKey: ['product', productId],
@@ -55,20 +71,56 @@ export default function ProductDetailPage() {
   const { data: reviews } = useQuery({
     queryKey: ['reviews', productId],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<{ data: Review[] }>>(`/reviews?product_id=${productId}`)
-      return res.data.data?.data || []
+      const res = await api.get<ApiResponse<{ data: Review[] }>>('/reviews')
+      // Filter reviews for this product client-side
+      const allReviews = res.data.data?.data || []
+      return allReviews.filter((r) => r.product_id === parseInt(productId))
     },
     enabled: !!productId,
   })
 
+  const submitReviewMutation = useMutation({
+    mutationFn: async (data: { rating: number; comment: string }) => {
+      return api.post('/reviews', {
+        product_id: parseInt(productId),
+        ...data,
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews', productId] })
+      queryClient.invalidateQueries({ queryKey: ['product', productId] })
+      setReviewRating(5)
+      setReviewComment('')
+      alert('Ulasan berhasil dikirim!')
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Gagal mengirim ulasan')
+    },
+  })
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!isLoggedIn) {
+      router.push('/login')
+      return
+    }
+    submitReviewMutation.mutate({ rating: reviewRating, comment: reviewComment })
+  }
+
   const handleAddToCart = async () => {
     if (!product) return
     setIsAddingToCart(true)
+
+    // Check if cart has items from different store
+    if (product.store_id && hasItemsFromOtherStore(product.store_id)) {
+      setPendingProduct({ product, quantity })
+      setShowReplaceModal(true)
+      setIsAddingToCart(false)
+      return
+    }
+
     try {
-      await api.post('/cart/items', {
-        product_id: product.id,
-        quantity,
-      })
+      await addItem(product as any, quantity)
       alert('Produk berhasil ditambahkan ke keranjang!')
       router.push('/buyer/cart')
     } catch (error: any) {
@@ -76,6 +128,29 @@ export default function ProductDetailPage() {
     } finally {
       setIsAddingToCart(false)
     }
+  }
+
+  const handleReplaceCart = async () => {
+    if (!pendingProduct) return
+    setShowReplaceModal(false)
+    setIsAddingToCart(true)
+
+    try {
+      clearCart()
+      await addItem(pendingProduct.product as any, pendingProduct.quantity)
+      alert('Keranjang berhasil diganti!')
+      router.push('/buyer/cart')
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Gagal menambahkan ke keranjang')
+    } finally {
+      setIsAddingToCart(false)
+      setPendingProduct(null)
+    }
+  }
+
+  const handleKeepCart = () => {
+    setShowReplaceModal(false)
+    setPendingProduct(null)
   }
 
   const formatPrice = (price: string) => {
@@ -117,12 +192,8 @@ export default function ProductDetailPage() {
     )
   }
 
-  // Generate placeholder images
-  const images = [
-    product.image || `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=600&fit=crop`,
-    `https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&h=600&fit=crop`,
-    `https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&h=600&fit=crop`,
-  ]
+  // Generate image URLs from product image only
+  const images = product.image ? [getImageUrl(product.image)] : []
 
   return (
     <div className="min-h-screen bg-ocean-50 flex flex-col">
@@ -192,7 +263,7 @@ export default function ProductDetailPage() {
 
               {/* Store Info */}
               <Link 
-                href={`/stores/${product.store?.id}`}
+                href="/seller/store"
                 className="flex items-center gap-3 p-4 bg-white rounded-xl border border-ocean-100 hover:border-ocean-200 transition-colors"
               >
                 <div className="w-12 h-12 bg-ocean-100 rounded-full flex items-center justify-center">
@@ -298,6 +369,58 @@ export default function ProductDetailPage() {
                 </div>
               ) : (
                 <div className="space-y-6">
+                  {/* Review Form */}
+                  {isLoggedIn ? (
+                    <form onSubmit={handleSubmitReview} className="bg-ocean-50 rounded-xl p-4 mb-6 border border-ocean-100">
+                      <h3 className="font-semibold text-ocean-700 mb-3">Beri Ulasan</h3>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-sm text-ocean-600">Rating:</span>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => setReviewRating(i + 1)}
+                            className="focus:outline-none"
+                          >
+                            <Star
+                              className={`w-6 h-6 ${
+                                i < reviewRating
+                                  ? 'text-yellow-400 fill-current'
+                                  : 'text-ocean-200'
+                              }`}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                      <textarea
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        placeholder="Tulis ulasan Anda..."
+                        className="w-full p-3 border border-ocean-200 rounded-xl text-ocean-700 placeholder-ocean-400 focus:outline-none focus:ring-2 focus:ring-ocean-500 resize-none"
+                        rows={3}
+                        required
+                      />
+                      <button
+                        type="submit"
+                        disabled={submitReviewMutation.isPending}
+                        className="mt-3 bg-ocean-500 text-white py-2 px-4 rounded-xl font-medium hover:bg-ocean-600 transition-colors disabled:opacity-50"
+                      >
+                        {submitReviewMutation.isPending ? 'Mengirim...' : 'Kirim Ulasan'}
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="bg-ocean-50 rounded-xl p-4 mb-6 border border-ocean-100 text-center">
+                      <p className="text-ocean-600 mb-2">Silakan login untuk memberikan ulasan</p>
+                      <Link
+                        href="/login"
+                        className="inline-block bg-ocean-500 text-white py-2 px-4 rounded-xl font-medium hover:bg-ocean-600 transition-colors"
+                      >
+                        Login
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Reviews List */}
                   {reviews && reviews.length > 0 ? (
                     reviews.map((review, idx) => (
                       <div key={idx} className="border-b border-ocean-100 pb-4 last:border-0">
@@ -342,6 +465,16 @@ export default function ProductDetailPage() {
       </main>
 
       <Footer />
+
+      {/* Replace Cart Modal */}
+      <ReplaceCartModal
+        isOpen={showReplaceModal}
+        onClose={handleKeepCart}
+        onReplace={handleReplaceCart}
+        onKeep={handleKeepCart}
+        currentStore={{ name: currentStoreName || 'Toko Lain' }}
+        newStore={{ name: product?.store?.name || 'Toko Ini' }}
+      />
     </div>
   )
 }

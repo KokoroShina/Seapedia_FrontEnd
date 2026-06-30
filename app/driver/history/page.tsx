@@ -174,7 +174,7 @@ export default function DriverHistoryPage() {
                     <div className="flex items-start gap-2">
                       <MapPin className="w-4 h-4 text-slate-400 mt-0.5" />
                       <span className="text-slate-600 line-clamp-1">
-                        {job.order.address.address}
+                        {job.order.address?.address ?? 'Alamat tidak tersedia'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100">

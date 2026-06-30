@@ -42,3 +42,14 @@ next-env.d.ts
 
 CLAUDE.MD
 /prompts
+/duitku_dokumentasi
+
+# claude session files
+/.claude/
+
+# debug/conversation log files
+2026-06-29-*.txt
+2026-06-30-*.txt
+
+# opencode
+opencode.json

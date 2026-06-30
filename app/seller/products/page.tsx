@@ -9,10 +9,11 @@ import api from '@/lib/axios'
 import type { ApiResponse } from '@/types/api'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
-import { 
+import {
   Plus, Edit2, Trash2, Package, Search,
   ChevronLeft, ChevronRight, AlertTriangle, X
 } from 'lucide-react'
+import { getImageUrl } from '@/lib/utils'
 
 interface Product {
   id: number
@@ -21,7 +22,8 @@ interface Product {
   description: string
   price: string
   stock: number
-  image: string | null
+  image?: string
+  image_url?: string | null
   created_at: string
   updated_at: string
 }
@@ -152,9 +154,9 @@ export default function SellerProductsPage() {
                 >
                   {/* Image */}
                   <div className="relative aspect-square bg-slate-100">
-                    {product.image ? (
+                    {product.image || product.image_url ? (
                       <img
-                        src={product.image}
+                        src={getImageUrl(product.image || product.image_url)}
                         alt={product.name}
                         className="w-full h-full object-cover"
                       />

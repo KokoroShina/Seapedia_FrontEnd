@@ -11,7 +11,7 @@ import Footer from '@/components/shared/Footer'
 import {
   Package, Search, ChevronLeft, ChevronRight, Store as StoreIcon
 } from 'lucide-react'
-import { formatRupiah } from '@/lib/utils'
+import { formatRupiah, getImageUrl } from '@/lib/utils'
 import { useCartStore } from '@/stores/cartStore'
 import { useToast } from '@/components/animations/Toast'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -24,7 +24,8 @@ interface Product {
   description: string
   price: string
   stock: number
-  image: string | null
+  image?: string
+  image_url?: string | null
   store?: {
     id: number
     name: string
@@ -209,13 +210,12 @@ export default function BuyerProductsPage() {
                     {/* Product Image */}
                     <Link href={`/buyer/products/${product.id}`}>
                       <div className="relative aspect-square bg-gradient-to-br from-ocean-50 to-cyan-50 overflow-hidden">
-                        {product.image ? (
+                        {product.image || product.image_url ? (
                           <Image
-                            src={product.image}
+                            src={getImageUrl(product.image || product.image_url)}
                             alt={product.name}
                             fill
                             className="object-cover group-hover:scale-110 transition-transform duration-500"
-                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                           />
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center text-ocean-200">
@@ -223,8 +223,6 @@ export default function BuyerProductsPage() {
                             <span className="text-sm">No Image</span>
                           </div>
                         )}
-
-                        {/* Out of Stock Overlay */}
                         {isOutOfStock && (
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-center">
                             <div className="bg-red-500 text-white text-sm px-4 py-2 rounded-lg font-bold shadow-lg">

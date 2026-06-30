@@ -11,6 +11,7 @@ import { Package, ChevronRight, Clock, CheckCircle, XCircle, Truck, Store, Star 
 
 interface OrderItem {
   id: number
+  product_id: number
   product_name: string
   product_price: string
   quantity: number
@@ -39,6 +40,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; b
   menunggu_pengirim: { label: 'Menunggu Pengirim', color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200', icon: Truck },
   sedang_dikirim: { label: 'Sedang Dikirim', color: 'text-indigo-700', bg: 'bg-indigo-50', border: 'border-indigo-200', icon: Truck },
   pesanan_selesai: { label: 'Selesai', color: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200', icon: CheckCircle },
+  dikembalikan: { label: 'Dikembalikan', color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200', icon: XCircle },
   dibatalkan: { label: 'Dibatalkan', color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200', icon: XCircle },
 }
 
@@ -82,6 +84,7 @@ const tabs = [
     { id: 'sedang_dikemas', label: 'Dikemas' },
     { id: 'sedang_dikirim', label: 'Dikirim' },
     { id: 'pesanan_selesai', label: 'Selesai' },
+    { id: 'dikembalikan', label: 'Dikembalikan' },
   ]
 
   return (
@@ -221,7 +224,7 @@ const tabs = [
                           </p>
                         </div>
                         <Link
-                          href={`/orders/${order.id}`}
+                          href={`/buyer/orders/${order.id}`}
                           className="flex items-center gap-1 text-slate-500 hover:text-ocean-600 font-medium"
                         >
                           Detail
@@ -231,12 +234,15 @@ const tabs = [
                     </div>
 
                     {/* Actions for different statuses */}
-                    {order.status === 'pesanan_selesai' && (
+                    {order.status === 'pesanan_selesai' && order.items?.[0] && (
                       <div className="px-4 pb-4">
-                        <button className="w-full py-2 border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-white transition-colors flex items-center justify-center gap-2">
+                        <Link
+                          href={`/buyer/products/${order.items[0].product_id}`}
+                          className="w-full py-2 border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-white transition-colors flex items-center justify-center gap-2"
+                        >
                           <Star className="w-4 h-4" />
                           Beri Ulasan
-                        </button>
+                        </Link>
                       </div>
                     )}
                   </div>
