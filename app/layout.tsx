@@ -7,8 +7,8 @@ import { ToastProvider } from "@/components/animations/Toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SEAPEDIA - Platform Belanja Terpercaya",
-  description: "Platform belanja terpercaya untuk semua kebutuhan Anda",
+  title: "SEAPEDIA - Marketplace Terpercaya Indonesia",
+  description: "Platform marketplace terpercaya di Indonesia. Belanja berbagai produk berkualitas dari ribuan seller terpercaya - makanan, fashion, elektronik, dan lainnya!",
 };
 
 export default function RootLayout({

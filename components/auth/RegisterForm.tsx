@@ -55,6 +55,7 @@ export default function RegisterForm() {
           <span className="text-[#0A2E4A]">Sea</span>
           <span className="text-[#1B8AC4]">pedia</span>
         </h1>
+        <p className="text-xs text-[#6B7280] mt-1">Marketplace Terpercaya Indonesia</p>
       </div>
 
       {/* Heading */}

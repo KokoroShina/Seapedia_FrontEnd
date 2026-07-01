@@ -118,10 +118,10 @@ export default function HeroSection() {
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                🌊
+                🛍️
               </motion.span>
               <span className="text-sm font-semibold text-ocean-700">
-                Marketplace Laut Terpercaya
+                Marketplace Terpercaya
               </span>
             </motion.div>
 
@@ -141,7 +141,7 @@ export default function HeroSection() {
                 transition={{ delay: 0.4 }}
                 className="block bg-gradient-to-r from-ocean-600 via-cyan-500 to-ocean-600 bg-clip-text text-transparent"
               >
-                Seafood Segar
+                Lebih Mudah
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 20 }}
@@ -149,7 +149,7 @@ export default function HeroSection() {
                 transition={{ delay: 0.5 }}
                 className="block"
               >
-                Lebih Mudah
+                Lebih Hemat
               </motion.span>
             </h1>
 
@@ -160,7 +160,7 @@ export default function HeroSection() {
               transition={{ delay: 0.6 }}
               className="text-lg md:text-xl text-ocean-500 mb-8 max-w-lg mx-auto lg:mx-0"
             >
-              Temukan berbagai jenis ikan, udang, dan hasil laut premium dari seller terpercaya di seluruh Indonesia
+              Temukan jutaan produk berkualitas dari ribuan seller terpercaya di seluruh Indonesia. Makanan, fashion, elektronik, dan lainnya - semua dalam satu platform!
             </motion.p>
 
             {/* CTA Button */}
@@ -250,7 +250,7 @@ export default function HeroSection() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-500 rounded-xl flex items-center justify-center">
-                    <span className="text-xl">🐟</span>
+                    <span className="text-xl">🛒</span>
                   </div>
                   <div>
                     <p className="text-xs text-ocean-500">Produk Terjual</p>

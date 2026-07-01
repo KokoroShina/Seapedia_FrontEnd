@@ -49,6 +49,7 @@ export default function HomePage() {
               <h2 className="text-xl md:text-2xl font-bold text-ocean-800">
                 Produk untuk Kamu
               </h2>
+              <span className="text-sm text-ocean-400 hidden md:inline">— Makanan, Fashion, Elektronik & lainnya</span>
             </div>
             <ProductGrid
               search={search}

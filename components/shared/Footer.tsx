@@ -21,11 +21,12 @@ export default function Footer() {
     { label: 'Syarat & Ketentuan', href: '/terms' },
   ]
 
+  // Diverse categories - NOT just seafood!
   const categoryLinks = [
-    { label: 'Ikan Segar', href: '/category/ikan' },
-    { label: 'Udang', href: '/category/udang' },
-    { label: 'Kepiting', href: '/category/kepiting' },
-    { label: 'Seafood Olahan', href: '/category/seafood' },
+    { label: 'Makanan', href: '/category/makanan' },
+    { label: 'Minuman', href: '/category/minuman' },
+    { label: 'Fashion', href: '/category/fashion' },
+    { label: 'Elektronik', href: '/category/elektronik' },
   ]
 
   return (
@@ -49,8 +50,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-ocean-600 text-sm mb-6 leading-relaxed">
-              Marketplace seafood terpercaya di Indonesia. Menyediakan berbagai jenis ikan segar,
-              udang, dan hasil laut berkualitas premium dari seller terpercaya.
+              Marketplace terpercaya di Indonesia. Menyediakan berbagai produk berkualitas dari ribuan seller terpercaya - makanan, fashion, elektronik, dan kebutuhan rumah tangga.
             </p>
 
             <div className="flex items-center gap-3">

@@ -18,25 +18,25 @@ const categoryImages: Record<string, string> = {
   snack: "/images/categories/snack.svg",
   buah: "/images/categories/fruit.svg",
   sayuran: "/images/categories/vegetable.svg",
+  fashion: "/images/categories/fashion.svg",
+  elektronik: "/images/categories/electronics.svg",
+  rumah: "/images/categories/home.svg",
   default: "/images/categories/default.svg",
 };
 
 // Category emojis for fallback
 const categoryEmojis: Record<string, string> = {
-  ikan: "🐟",
-  udang: "🦐",
-  kepiting: "🦀",
-  cumi: "🦑",
-  kerang: "🐚",
   makanan: "🍜",
   minuman: "🥤",
   snack: "🍿",
   buah: "🍎",
   sayuran: "🥬",
-  seafood: "🦐",
-  frozen: "🧊",
-  segar: "✨",
-  kering: "🏖️",
+  fashion: "👕",
+  elektronik: "📱",
+  rumah: "🏠",
+  beauty: "💄",
+  olahraga: "⚽",
+  grocery: "🛒",
   default: "📦",
 };
 
@@ -54,16 +54,16 @@ function getCategoryEmoji(slug: string): string {
   return categoryEmojis.default;
 }
 
-// Demo categories for when API is empty
+// Demo categories for when API is empty - DIVERSE, not just seafood
 const DEMO_CATEGORIES: Category[] = [
-  { id: 1, name: "Ikan Segar", slug: "ikan-segar", icon: "🐟", image: "" },
-  { id: 2, name: "Udang", slug: "udang", icon: "🦐", image: "" },
-  { id: 3, name: "Kepiting", slug: "kepiting", icon: "🦀", image: "" },
-  { id: 4, name: "Cumi-cumi", slug: "cumi", icon: "🦑", image: "" },
-  { id: 5, name: "Kerang", slug: "kerang", icon: "🐚", image: "" },
-  { id: 6, name: "Seafood Olahan", slug: "seafood-olahan", icon: "🍤", image: "" },
-  { id: 7, name: "Frozen Food", slug: "frozen", icon: "🧊", image: "" },
-  { id: 8, name: "Ikan Kering", slug: "ikan-kering", icon: "🏖️", image: "" },
+  { id: 1, name: "Makanan", slug: "makanan", icon: "🍜", image: "" },
+  { id: 2, name: "Minuman", slug: "minuman", icon: "🥤", image: "" },
+  { id: 3, name: "Fashion", slug: "fashion", icon: "👕", image: "" },
+  { id: 4, name: "Elektronik", slug: "elektronik", icon: "📱", image: "" },
+  { id: 5, name: "Rumah Tangga", slug: "rumah", icon: "🏠", image: "" },
+  { id: 6, name: "Beauty", slug: "beauty", icon: "💄", image: "" },
+  { id: 7, name: "Snack", slug: "snack", icon: "🍿", image: "" },
+  { id: 8, name: "Buah & Sayur", slug: "buah-sayur", icon: "🍎", image: "" },
 ];
 
 export default function CategoryBar({
