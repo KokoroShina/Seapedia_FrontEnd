@@ -95,15 +95,12 @@ Gunakan akun berikut untuk testing berbagai role:
 
 | Role | Email | Password | Keterangan |
 |------|-------|----------|------------|
-| **Admin** | admin@seapedia.com | password | Full admin access |
-| **Seller 1** | seller1@seapedia.com | password | Toko dengan berbagai produk |
-| **Seller 2** | seller2@seapedia.com | password | Toko alternatif |
-| **Buyer 1** | buyer1@seapedia.com | password | Akun pembeli aktif |
-| **Buyer 2** | buyer2@seapedia.com | password | Akun pembeli kedua |
-| **Driver 1** | driver1@seapedia.com | password | Driver aktif |
-| **Driver 2** | driver2@seapedia.com | password | Driver kedua |
+| **Admin** | admin+seapedia@email.com |  seapedia123 | Full admin access |
+| **Seller** | seller+seapedia@email.com | seapedia123 | Toko dengan berbagai produk |
+| **Buyer** | buyer+seapedia@email.com| seapedia123 | Akun pembeli aktif |
+| **Driver 2** |driver+seapedia@email.com |  seapedia123 | Driver kedua |
 
-> 📌 **Catatan:** Password default untuk semua akun adalah `password`. Jika demo accounts tidak berfungsi, hubungi backend developer untuk reset password.
+> 📌 **Catatan:** Password default untuk semua akun adalah ` seapedia123`. Jika demo accounts tidak berfungsi, hubungi backend developer untuk reset password.
 
 ## 🔄 Role Selection Flow
 
@@ -225,7 +222,7 @@ Set environment variables berikut di Vercel Dashboard:
 
 ### Live Demo
 
-🌐 **Production URL**: https://seapedia-frontend.vercel.app
+🌐 **Production URL**: https://seapedia-front-end.vercel.app/
 
 ## 🧪 Testing Guide
 
@@ -234,7 +231,7 @@ Ikuti langkah-langkah berikut untuk testing end-to-end:
 ### Langkah 1: Guest Browse (Tanpa Login)
 
 ```
-1. Buka https://seapedia-frontend.vercel.app
+1. Buka https://seapedia-front-end.vercel.app/
 2. Landing page dengan hero section dan produk
 3. Klik "Jelajahi Sekarang" → scroll ke produk
 4. Filter berdasarkan kategori (klik kategori di CategoryBar)
@@ -429,7 +426,7 @@ seapedia_frontend/
 1. Fork repository
 2. Create feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
+4. Push to branch (`git push origin master`)
 5. Open Pull Request
 
 ## 📄 License
@@ -438,11 +435,9 @@ This project is proprietary software. All rights reserved.
 
 ## 📞 Kontak
 
-- **Email**: support@seapedia.com
-- **Website**: https://seapedia.com
+- **Email**: raehanathaiya@gmail.com
+
 
 ---
 
-<p align="center">
-  Made with ❤️ by SEAPEDIA Team
-</p>
+
